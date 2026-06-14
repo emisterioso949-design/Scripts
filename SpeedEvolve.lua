@@ -27,6 +27,9 @@ local lastRebirth = 0
 local lastEvolve  = 0
 local lastWins    = 0
 
+-- ============================================================
+--  GUI
+-- ============================================================
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "AxelGUI"
 ScreenGui.ResetOnSpawn = false
@@ -133,34 +136,69 @@ Watermark.Font = Enum.Font.Gotham
 Watermark.TextSize = 11
 Watermark.Parent = MainFrame
 
+-- ============================================================
+--  FUNCIONES
+-- ============================================================
+
+-- Busca la DebounceZone del stage mas alto disponible
+local function getWinZone()
+    local best = nil
+    local bestNum = 0
+    for _, v in pairs(workspace:GetDescendants()) do
+        if v.Name == "DebounceZone" then
+            local num = tonumber(v.Parent.Name:match("%d+")) or 0
+            if num > bestNum then
+                bestNum = num
+                best = v
+            end
+        end
+    end
+    return best
+end
+
+-- Teletransportar
+local function TeleportTo(part)
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        char.HumanoidRootPart.CFrame = part.CFrame + Vector3.new(0, 5, 0)
+    end
+end
+
+-- Goto Portal usa WorldsRemoteEvent
 PortalBtn.MouseButton1Click:Connect(function()
-    WorldsRemote:FireServer()
+    WorldsRemote:FireServer("Open")
 end)
 
+-- ============================================================
+--  MAIN LOOP
+-- ============================================================
 RunService.Heartbeat:Connect(function()
     local now = tick()
 
-    if Toggles.SpeedFarm and now - lastSpeed > 0.1 then
+    -- SPEED FARM: spamea varias veces por tick para maxima velocidad
+    if Toggles.SpeedFarm and now - lastSpeed > 0.05 then
         lastSpeed = now
-        SpeedRemote:FireServer()
-    end
-
-    if Toggles.WinsFarm and now - lastWins > 1 then
-        lastWins = now
-        local char = LocalPlayer.Character
-        local finish = workspace:FindFirstChild("Finish", true)
-            or workspace:FindFirstChild("Win", true)
-            or workspace:FindFirstChild("Goal", true)
-        if char and char:FindFirstChild("HumanoidRootPart") and finish then
-            char.HumanoidRootPart.CFrame = finish.CFrame + Vector3.new(0, 4, 0)
+        for i = 1, 10 do
+            SpeedRemote:FireServer()
         end
     end
 
+    -- WINS FARM: teletransporta a la DebounceZone del stage mas alto
+    if Toggles.WinsFarm and now - lastWins > 0.5 then
+        lastWins = now
+        local zone = getWinZone()
+        if zone then
+            TeleportTo(zone)
+        end
+    end
+
+    -- AUTO REBIRTH
     if Toggles.AutoRebirth and now - lastRebirth > 1 then
         lastRebirth = now
         RebirthRemote:FireServer()
     end
 
+    -- AUTO EVOLVE
     if Toggles.AutoEvolve and now - lastEvolve > 1 then
         lastEvolve = now
         EvolveRemote:FireServer()
