@@ -1,12 +1,11 @@
 -- +1 Speed Evolve Script
--- YouTube: Tora IsMe
+-- by Axel
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local RS = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 
--- RemoteEvents exactos del juego
 local function getRemote(name)
     return RS:WaitForChild("Modules"):WaitForChild("Shared"):WaitForChild("RemoteEventService"):WaitForChild(name)
 end
@@ -16,7 +15,6 @@ local RebirthRemote = getRemote("RebirthRemoteEvent")
 local EvolveRemote  = getRemote("EvolutionRemoteEvent")
 local WorldsRemote  = getRemote("WorldsRemoteEvent")
 
--- STATE
 local Toggles = {
     SpeedFarm   = false,
     WinsFarm    = false,
@@ -24,17 +22,13 @@ local Toggles = {
     AutoEvolve  = false,
 }
 
--- COOLDOWNS
 local lastSpeed   = 0
 local lastRebirth = 0
 local lastEvolve  = 0
 local lastWins    = 0
 
--- ============================================================
---  GUI
--- ============================================================
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "ToraIsMe_GUI"
+ScreenGui.Name = "AxelGUI"
 ScreenGui.ResetOnSpawn = false
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -64,7 +58,6 @@ TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.TextSize = 14
 TitleLabel.Parent = TitleBar
 
--- Toggle creator
 local function CreateToggle(name, displayName, yPos)
     local Row = Instance.new("Frame")
     Row.Size = UDim2.new(1, -16, 0, 36)
@@ -93,7 +86,7 @@ local function CreateToggle(name, displayName, yPos)
     local Check = Instance.new("TextLabel")
     Check.Size = UDim2.new(1, 0, 1, 0)
     Check.BackgroundTransparency = 1
-    Check.Text = "âœ“"
+    Check.Text = "v"
     Check.TextColor3 = Color3.fromRGB(255, 255, 255)
     Check.Font = Enum.Font.GothamBold
     Check.TextSize = 14
@@ -118,7 +111,6 @@ CreateToggle("WinsFarm",    "Wins Farm",    80)
 CreateToggle("AutoRebirth", "Auto Rebirth", 120)
 CreateToggle("AutoEvolve",  "Auto Evolve",  160)
 
--- Goto Portal button
 local PortalBtn = Instance.new("TextButton")
 PortalBtn.Size = UDim2.new(1, -16, 0, 28)
 PortalBtn.Position = UDim2.new(0, 8, 0, 205)
@@ -141,24 +133,18 @@ Watermark.Font = Enum.Font.Gotham
 Watermark.TextSize = 11
 Watermark.Parent = MainFrame
 
--- Goto Portal
 PortalBtn.MouseButton1Click:Connect(function()
     WorldsRemote:FireServer()
 end)
 
--- ============================================================
---  MAIN LOOP
--- ============================================================
 RunService.Heartbeat:Connect(function()
     local now = tick()
 
-    -- Speed Farm: spamea AddSpeedRemoteEvent
     if Toggles.SpeedFarm and now - lastSpeed > 0.1 then
         lastSpeed = now
         SpeedRemote:FireServer()
     end
 
-    -- Wins Farm: teletransporta a la zona finish
     if Toggles.WinsFarm and now - lastWins > 1 then
         lastWins = now
         local char = LocalPlayer.Character
@@ -170,17 +156,15 @@ RunService.Heartbeat:Connect(function()
         end
     end
 
-    -- Auto Rebirth
     if Toggles.AutoRebirth and now - lastRebirth > 1 then
         lastRebirth = now
         RebirthRemote:FireServer()
     end
 
-    -- Auto Evolve
     if Toggles.AutoEvolve and now - lastEvolve > 1 then
         lastEvolve = now
         EvolveRemote:FireServer()
     end
 end)
 
-print("[ToraIsMe] Script cargado correctamente âœ“")
+print("[Axel] Script cargado correctamente")
